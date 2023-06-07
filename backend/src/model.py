@@ -9,7 +9,7 @@ class BigramLanguageModel(nn.Module):
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
 
-    def forward(self, idx, targets=None) -> Tuple:
+    def forward(self, idx, targets=None):
         # idx dimensions: (B, T)
         logits = self.token_embedding_table(idx)  # (B, T, C)
 
