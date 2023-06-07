@@ -1,13 +1,121 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Tuple
+
+VOCAB = [
+    "\n",
+    " ",
+    "!",
+    '"',
+    "'",
+    "(",
+    ")",
+    "*",
+    ",",
+    "-",
+    ".",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    ":",
+    ";",
+    "?",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "[",
+    "]",
+    "_",
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+    "À",
+    "Æ",
+    "É",
+    "à",
+    "â",
+    "ä",
+    "æ",
+    "ç",
+    "è",
+    "é",
+    "ê",
+    "ë",
+    "î",
+    "ï",
+    "ô",
+    "ö",
+    "ü",
+    "Œ",
+    "œ",
+    "‐",
+    "—",
+    "‘",
+    "’",
+    "“",
+    "”",
+]
 
 
 class BigramLanguageModel(nn.Module):
-    def __init__(self, vocab_size):
+    def __init__(self):
         super().__init__()
-        self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
+        self.stoi = {c: i for i, c in enumerate(VOCAB)}
+        self.itos = {i: c for i, c in enumerate(VOCAB)}
+        self.token_embedding_table = nn.Embedding(len(VOCAB), len(VOCAB))
 
     def forward(self, idx, targets=None):
         # idx dimensions: (B, T)
@@ -22,6 +130,12 @@ class BigramLanguageModel(nn.Module):
             loss = F.cross_entropy(logits, targets)
 
         return logits, loss
+
+    def encode(self, x):
+        return [self.stoi[c] for c in x]
+
+    def decode(self, x):
+        return "".join([self.itos[c] for c in x])
 
     def generate(self, idx, max_new_tokens):
         # idx is (B, T) array of indices in the current context
