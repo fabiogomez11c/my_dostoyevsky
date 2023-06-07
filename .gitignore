@@ -2,3 +2,7 @@
 **/__pycache__/
 .vscode/
 **/.pytest_cache/
+backend/serve/
+**/logs/
+**.mar
+**.pth
