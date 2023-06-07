@@ -5,4 +5,3 @@
 backend/serve/
 **/logs/
 **.mar
-**.pth
