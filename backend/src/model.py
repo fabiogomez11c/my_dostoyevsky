@@ -203,7 +203,7 @@ class LitBigramLanguageModel(pl.LightningModule):
         # training_step defines the train loop.
         x, y = batch
         logits, loss = self(x, y)
-        self.log("train_loss", loss, prog_bar=True)
+        self.log("train_loss", loss, prog_bar=True, logger=True)
         return loss
 
     def configure_optimizers(self):
@@ -212,24 +212,30 @@ class LitBigramLanguageModel(pl.LightningModule):
 
 if __name__ == "__main__":
     from utils import get_files_from_folder, open_txt
+    from mlflow.models.signature import infer_signature
+    import mlflow
+
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
     torch.set_float32_matmul_precision("medium")
 
-    books = get_files_from_folder("books")
-    books_string = [open_txt(f"books/{i}") for i in books]
-    books = "\n".join(books_string)
+    with mlflow.start_run() as run:
+        books = get_files_from_folder("books")
+        books_string = [open_txt(f"books/{i}") for i in books]
+        books = "\n".join(books_string)
 
-    train_dataset = FyodorDataset(books)
-    train_dataloader = DataLoader(
-        train_dataset, batch_size=128, shuffle=True, num_workers=24
-    )
+        train_dataset = FyodorDataset(books[:100000])
+        train_dataloader = DataLoader(
+            train_dataset, batch_size=128, shuffle=True, num_workers=24
+        )
 
-    trainer = pl.Trainer(
-        fast_dev_run=False,
-        max_epochs=10,
-        log_every_n_steps=1,
-        accelerator="gpu",
-        # devices=1,
-    )
-    model = LitBigramLanguageModel()
-    trainer.fit(model, train_dataloaders=train_dataloader)
+        trainer = pl.Trainer(
+            fast_dev_run=False,
+            max_epochs=20,
+            log_every_n_steps=1,
+            accelerator="gpu",
+            # devices=1,
+        )
+        model = LitBigramLanguageModel()
+        mlflow.pytorch.autolog()
+        trainer.fit(model, train_dataloaders=train_dataloader)

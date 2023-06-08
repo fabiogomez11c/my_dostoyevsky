@@ -5,3 +5,6 @@
 backend/serve/
 **/logs/
 **.mar
+lightning_logs/
+mlartifacts/
+mlruns/
