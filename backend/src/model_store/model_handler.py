@@ -1,5 +1,4 @@
 import torch
-import logging
 from ts.torch_handler.base_handler import BaseHandler
 
 
