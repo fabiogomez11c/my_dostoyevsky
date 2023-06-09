@@ -4,8 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "*"
 torch = "*"
+numpy = "*"
+fastapi = {extras = ["all"], version = "*"}
 
 [dev-packages]
 pytest = "*"
