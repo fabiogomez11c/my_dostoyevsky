@@ -125,9 +125,10 @@ class BigramLanguageModel(nn.Module):
         if targets is None:
             loss = None
         else:
-            B, T, C = logits.shape
-            logits = logits.view(B * T, C)
-            targets = targets.view(B * T)
+            if len(logits.shape) == 3:
+                B, T, C = logits.shape
+                logits = logits.view(B * T, C)
+                targets = targets.view(B * T)
             loss = F.cross_entropy(logits, targets)
 
         return logits, loss
