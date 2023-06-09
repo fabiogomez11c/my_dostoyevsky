@@ -1,7 +1,22 @@
-from src.utils import get_files_from_folder, open_txt
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# allow CORS all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-if __name__ == "__main__":
-    books_folder = "books"
-    books = get_files_from_folder(books_folder)
-    print(open_txt(f"{books_folder}/{books[0]}"))
+class Input(BaseModel):
+    text: str
+
+
+@app.post("/predict")
+def predict(input: Input):
+    return {"text": input.text}

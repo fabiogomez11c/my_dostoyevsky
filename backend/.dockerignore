@@ -1,0 +1,7 @@
+.envs/
+.vscode/
+books/
+tests/
+baseline.ipynb
+model_prueba.py
+pyproject.toml
