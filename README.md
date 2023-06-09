@@ -23,4 +23,6 @@ pytest
 make dev-build-image tag=<imagetag>
 make dev-run tag=<imagetag>
 ```
-Set up the `imageatag` of your preference, for example: `fyodor:v1`. The app will be available at http://localhost:8000
+Set up the `imageatag` of your preference, for example: `fyodor:v1`. The app will be available at http://localhost:8000. This container is ready for deployment, for example to [Cloud Run](https://cloud.google.com/run?hl=es-419).
+
+## Frontend
