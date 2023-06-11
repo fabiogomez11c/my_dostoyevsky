@@ -20,7 +20,7 @@ export default function Home() {
       setOutput(response.data.text)
     }
     catch (error) {
-      console.log(error)
+      console.log('Error is:', error)
     }
   }
 
