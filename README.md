@@ -33,20 +33,13 @@ cd fyodor
 npm install
 ```
 
-After that, a file called `config.json` should be created and stored inside the folder `fyodor/src/app`, the file should have this structure:
+After that, a file called `env.local` should be created and stored inside the folder `fyodor`, the file should have this structure:
 
-```json
-{
-    "live": {
-        "model": "https://model-api"
-    },
-    "test": {
-        "model": "http://127.0.0.1:8000"
-    }
-}
+```
+NEXT_PUBLIC_MODEL_API_PROD=<url of the deployed model>
 ```
 
-This is to activate or deactivate the `live` or `test` mode inside the file `page.js`.
+To know more about this read [here](https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables)
 
 - To execute in dev mode:
 ```bash
