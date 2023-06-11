@@ -8,4 +8,4 @@ backend/serve/
 lightning_logs/
 mlartifacts/
 mlruns/
-# fyodor/src/app/config.json
+fyodor/src/app/config.json
