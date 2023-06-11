@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 import config from './config.json'
@@ -9,7 +9,7 @@ const version = 'live'
 export default function Home() {
   const [text, setText] = useState(''); // user input
   const [complete, setComplete] = useState(''); // the complete text: user input + model output
-  const [output, setOutput] = useState(false);
+  const [output, setOutput] = useState('');
 
   const handleChange = (event) => {
     setText(event.target.value);
@@ -20,12 +20,17 @@ export default function Home() {
       const response = await axios.post(config[version]["model"] + "/predict", {
         "text": text
       });
-      setComplete(response.data.text)
+      setOutput(response.data.text)
     }
     catch (error) {
       console.log(error)
     }
   }
+
+  useEffect(() => {
+    // console.log(output)
+    setComplete(text + output.slice(1))
+  }, [output])
 
   return (
     <main className="flex min-h-screen flex-col items-center p-24">
