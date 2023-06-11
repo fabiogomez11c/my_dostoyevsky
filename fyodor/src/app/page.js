@@ -2,10 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-import config from './config.json'
-
-const version = 'live'
-
 export default function Home() {
   const [text, setText] = useState(''); // user input
   const [complete, setComplete] = useState(''); // the complete text: user input + model output
@@ -17,7 +13,8 @@ export default function Home() {
 
   const handleSend = async () => {
     try {
-      const response = await axios.post(config[version]["model"] + "/predict", {
+      const url = process.env.NEXT_PUBLIC_MODEL_API_PROD
+      const response = await axios.post(url + "/predict", {
         "text": text
       });
       setOutput(response.data.text)
