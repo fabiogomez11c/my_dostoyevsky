@@ -6,15 +6,25 @@ from constant import VOCAB
 
 
 class BigramLanguageModel(nn.Module):
-    def __init__(self):
+    def __init__(self, n_embd=32, block_size=8, device="cpu"):
         super().__init__()
         self.stoi = {c: i for i, c in enumerate(VOCAB)}
         self.itos = {i: c for i, c in enumerate(VOCAB)}
-        self.token_embedding_table = nn.Embedding(len(VOCAB), len(VOCAB))
+        self.token_embedding_table = nn.Embedding(len(VOCAB), n_embd)
+        self.position_embedding_table = nn.Embedding(block_size, n_embd)
+        self.lm_head = nn.Linear(n_embd, len(VOCAB))
+
+        self.device = device
 
     def forward(self, idx, targets=None):
+        B, T = idx.shape
         # idx dimensions: (B, T)
-        logits = self.token_embedding_table(idx)  # (B, T, C)
+        token_emb = self.token_embedding_table(idx)  # (B, T, C)
+        pos_emb = self.position_embedding_table(
+            torch.arange(T, device=self.device)
+        )  # (T, C)
+        x = token_emb + pos_emb  # (B, T, C)
+        logits = self.lm_head(x)  # (B, T, vocab_size)
 
         if targets is None:
             loss = None
