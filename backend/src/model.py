@@ -2,113 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-
-VOCAB = [
-    "\n",
-    " ",
-    "!",
-    '"',
-    "'",
-    "(",
-    ")",
-    "*",
-    ",",
-    "-",
-    ".",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    ":",
-    ";",
-    "?",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-    "[",
-    "]",
-    "_",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-    "À",
-    "Æ",
-    "É",
-    "à",
-    "â",
-    "ä",
-    "æ",
-    "ç",
-    "è",
-    "é",
-    "ê",
-    "ë",
-    "î",
-    "ï",
-    "ô",
-    "ö",
-    "ü",
-    "Œ",
-    "œ",
-    "‐",
-    "—",
-    "‘",
-    "’",
-    "“",
-    "”",
-]
+from constant import VOCAB
 
 
 class BigramLanguageModel(nn.Module):
@@ -143,7 +37,11 @@ class BigramLanguageModel(nn.Module):
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
             # get the predictions
-            logits, loss = self(idx)
+            model_result = self(idx)
+            if type(model_result) == tuple:
+                logits, loss = model_result
+            else:
+                logits = self(idx)
             # focus only on the last time step, this is important!
             logits = logits[:, -1, :]  # becomes (B, C)
             # apply softmax to get probabilities
@@ -153,3 +51,16 @@ class BigramLanguageModel(nn.Module):
             # append sampled index to the running sequence
             idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
         return idx
+
+
+class BigramLanguageModelV2(BigramLanguageModel):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, idx):
+        logits = self.token_embedding_table(idx)  # (B, T, C)
+
+        if len(logits.shape) == 3:
+            B, T, C = logits.shape
+            logits = logits.view(B * T, C)
+        return logits
