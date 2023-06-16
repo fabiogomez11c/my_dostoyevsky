@@ -21,7 +21,6 @@ class Head(nn.Module):
         k = self.key(x)  # (B, T, C)
         q = self.query(x)  # (B, T, C)
         # compute attention scores ("affinities")
-        assert self.block_size == T
         # remember the scaling by dimension to avoid bias in softmax - scale attention
         wei = q @ k.transpose(-1, -2) * C**-0.5  # (B, T, T)
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
@@ -77,9 +76,9 @@ class BigramLanguageModel(nn.Module):
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
             # crop idx to the last block_size tokens
-            idx = idx[:, -self.block_size :]  # (B, T)
+            idx_cond = idx[:, -self.block_size :]  # (B, T)
             # get the predictions
-            model_result = self(idx)
+            model_result = self(idx_cond)
             if type(model_result) == tuple:
                 logits, loss = model_result
             else:
