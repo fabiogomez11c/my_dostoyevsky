@@ -31,6 +31,54 @@ class Head(nn.Module):
         return out
 
 
+class MultiHeadAttention(nn.Module):
+    """multiple head of self-attention in parallel"""
+
+    def __init__(self, num_heads, head_size, n_embd, block_size):
+        super().__init__()
+        self.heads = nn.ModuleList(
+            [
+                Head(head_size=head_size, n_embd=n_embd, block_size=block_size)
+                for _ in range(num_heads)
+            ]
+        )
+        self.proj = nn.Linear(n_embd, n_embd)
+
+    def forward(self, x):
+        out = torch.cat([h(x) for h in self.heads], dim=-1)
+        out = self.proj(out)
+        return out
+
+
+class FeedForward(nn.Module):
+    def __init__(self, n_embd):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(n_embd, n_embd * 4), nn.ReLU(), nn.Linear(n_embd * 4, n_embd)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class Block(nn.Module):
+    """Transformer block: communication followed by computation"""
+
+    def __init__(self, n_embd, n_head, block_size):
+        # n_embd: embedding dimension, n_head: the number of heads we'd like
+        super().__init__()
+        head_size = n_embd // n_head
+        self.sa = MultiHeadAttention(
+            num_heads=n_head, head_size=head_size, n_embd=n_embd, block_size=block_size
+        )
+        self.ffwd = FeedForward(n_embd)
+
+    def forward(self, x):
+        x = x + self.sa(x)
+        x = x + self.ffwd(x)
+        return x
+
+
 class BigramLanguageModel(nn.Module):
     def __init__(self, n_embd=32, block_size=8, device="cpu"):
         super().__init__()
@@ -38,7 +86,15 @@ class BigramLanguageModel(nn.Module):
         self.itos = {i: c for i, c in enumerate(VOCAB)}
         self.token_embedding_table = nn.Embedding(len(VOCAB), n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
-        self.sa_head = Head(n_embd, n_embd, block_size)
+        # self.sa_head = MultiHeadAttention(
+        #     num_heads=4, head_size=n_embd // 4, n_embd=n_embd, block_size=block_size
+        # )  # i.e 4 heads of 8 dimension each, concatenated to 32
+        # self.ffwd = FeedForward(n_embd)
+        self.blocks = nn.Sequential(
+            Block(n_embd=n_embd, n_head=4, block_size=block_size),
+            Block(n_embd=n_embd, n_head=4, block_size=block_size),
+            Block(n_embd=n_embd, n_head=4, block_size=block_size),
+        )
         self.lm_head = nn.Linear(n_embd, len(VOCAB))
         self.block_size = block_size
 
@@ -52,7 +108,9 @@ class BigramLanguageModel(nn.Module):
             torch.arange(T, device=self.device)
         )  # (T, C)
         x = token_emb + pos_emb  # (B, T, C)
-        x = self.sa_head(x)  # (B, T, C)
+        # x = self.sa_head(x)  # (B, T, C)
+        # x = self.ffwd(x)  # (B, T, C)
+        x = self.blocks(x)  # (B, T, C)
         logits = self.lm_head(x)  # (B, T, vocab_size)
 
         if targets is None:
