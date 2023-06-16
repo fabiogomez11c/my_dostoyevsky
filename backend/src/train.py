@@ -174,18 +174,17 @@ def train_simple_network(
     return pd.DataFrame.from_dict(results)
 
 
-def get_batch(data, block_size, batch_size):
+def get_batch(data, block_size, batch_size, device="cpu"):
     ix = torch.randint(len(data) - block_size, (batch_size,))
     x = torch.stack([data[i : i + block_size] for i in ix])
     y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
-    return x, y
+    return x.to(device), y.to(device)
 
 
 if __name__ == "__main__":
     import torch.nn as nn
     from data import FyodorDataset
     from model import BigramLanguageModel
-    from sklearn.metrics import accuracy_score
     from utils import get_files_from_folder, open_txt
 
     books = get_files_from_folder("books")
