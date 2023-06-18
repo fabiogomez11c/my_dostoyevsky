@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from constant import VOCAB
+from src.constant import VOCAB
 
 
 class Head(nn.Module):
@@ -98,7 +98,7 @@ class Block(nn.Module):
 
 class BigramLanguageModel(nn.Module):
     def __init__(
-        self, n_embd=32, block_size=8, n_head=4, n_layer=3, dropout=0.1, device="cpu"
+        self, n_embd=32, block_size=8, n_head=4, n_layer=3, dropout=0.1, to_device="cpu"
     ):
         super().__init__()
         self.stoi = {c: i for i, c in enumerate(VOCAB)}
@@ -115,14 +115,15 @@ class BigramLanguageModel(nn.Module):
         self.lm_head = nn.Linear(n_embd, len(VOCAB))
         self.block_size = block_size
 
-        self.device = device
+        self.to_device = to_device
 
     def forward(self, idx, targets=None):
         B, T = idx.shape
         # idx dimensions: (B, T)
         token_emb = self.token_embedding_table(idx)  # (B, T, C)
         pos_emb = self.position_embedding_table(
-            torch.arange(T, device=self.device)
+            torch.arange(T, device=self.to_device)
+            # torch.arange(T)
         )  # (T, C)
         x = token_emb + pos_emb  # (B, T, C)
         x = self.blocks(x)  # (B, T, C)
