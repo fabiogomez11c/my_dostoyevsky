@@ -4,17 +4,18 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-torch = "*"
 numpy = "*"
 fastapi = {extras = ["all"], version = "*"}
 tqdm = "*"
-lightning = "*"
+torch = "*"
+lightning = "==2.0.0"
 
 [dev-packages]
 pytest = "*"
 jupyter = "*"
 pandas = "*"
 scikit-learn = "*"
+mlflow = "*"
 
 [requires]
 python_version = "3.10"
