@@ -8,6 +8,7 @@ torch = "*"
 numpy = "*"
 fastapi = {extras = ["all"], version = "*"}
 tqdm = "*"
+lightning = "*"
 
 [dev-packages]
 pytest = "*"
