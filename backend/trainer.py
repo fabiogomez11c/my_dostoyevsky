@@ -76,6 +76,7 @@ if __name__ == "__main__":
 
     for block_size, n_embd, n_head, n_layer, dropout, learning_rate in params:
         with mlflow.start_run(experiment_id=exp_id) as run:
+            artifact_path = "model"
             device = "cuda" if torch.cuda.is_available() else "cpu"
             batch_size = 256
             print("+++++++++++++++++++++++++++++++")
@@ -101,13 +102,13 @@ if __name__ == "__main__":
             books = "\n".join(books_string)
             train_dataset = FyodorDataset(
                 books[: int(len(books) * 0.8)],
-                length=batch_size * 100,
+                length=batch_size * 5,
                 block_size=block_size,
                 batch_size=batch_size,
             )
             val_dataset = FyodorDataset(
                 books[int(len(books) * 0.8) :],
-                length=batch_size * 10,
+                length=batch_size * 1,
                 block_size=block_size,
                 batch_size=batch_size,
             )
@@ -119,7 +120,7 @@ if __name__ == "__main__":
             )
 
             trainer = pl.Trainer(
-                accelerator="gpu", devices=1, max_epochs=25, log_every_n_steps=1
+                accelerator="gpu", devices=1, max_epochs=2, log_every_n_steps=1
             )
             model = BigramLightning(
                 to_device=device,
@@ -132,6 +133,7 @@ if __name__ == "__main__":
             )
 
             mlflow.pytorch.autolog()
+            mlflow.pytorch.log_state_dict(model.state_dict(), artifact_path)
             trainer.fit(
                 model,
                 train_dataloaders=train_dataloader,
