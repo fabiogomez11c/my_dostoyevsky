@@ -44,6 +44,7 @@ if __name__ == "__main__":
     import uuid
     import mlflow
     from itertools import product
+    import random
 
     torch.set_float32_matmul_precision("medium")
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
@@ -53,30 +54,41 @@ if __name__ == "__main__":
     exp_id = mlflow.create_experiment(exp_name)
 
     # create grid of hyperparameters
-    space_block_size = [8, 16, 32]
-    space_n_embd = [96, 192, 384]
-    space_n_head = [4, 6, 8]
-    space_n_layer = [3, 6, 9]
-    space_dropout = [0.1, 0.2, 0.3, 0.4, 0.5]
-    space_learning_rate = [1e-3, 1e-4, 1e-5]
+    space_block_size = [128, 256]
+    space_n_embd = [192, 384]
+    space_n_head = [2, 4, 6, 8]
+    space_n_layer = [6, 9, 12]
+    space_dropout = [0.3]
+    space_learning_rate = [1e-3]
 
-    for block_size, n_embd, n_head, n_layer, dropout, learning_rate in product(
-        space_block_size,
-        space_n_embd,
-        space_n_head,
-        space_n_layer,
-        space_dropout,
-        space_learning_rate,
-    ):
+    # random grid
+    params = list(
+        product(
+            space_block_size,
+            space_n_embd,
+            space_n_head,
+            space_n_layer,
+            space_dropout,
+            space_learning_rate,
+        )
+    )
+    random.shuffle(params)
+
+    for block_size, n_embd, n_head, n_layer, dropout, learning_rate in params:
         with mlflow.start_run(experiment_id=exp_id) as run:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             batch_size = 256
-            # block_size = 8
-            # learning_rate = 1e-3
-            # n_embd = 384
-            # n_head = 6
-            # n_layer = 6
-            # dropout = 0.4
+            print("+++++++++++++++++++++++++++++++")
+            print(
+                {
+                    "block_size": block_size,
+                    "n_embd": n_embd,
+                    "n_head": n_head,
+                    "n_layer": n_layer,
+                    "dropout": dropout,
+                    "learning_rate": learning_rate,
+                }
+            )
 
             mlflow.log_param("block_size", block_size)
             mlflow.log_param("n_embd", n_embd)
@@ -89,13 +101,13 @@ if __name__ == "__main__":
             books = "\n".join(books_string)
             train_dataset = FyodorDataset(
                 books[: int(len(books) * 0.8)],
-                length=batch_size * 10,
+                length=batch_size * 100,
                 block_size=block_size,
                 batch_size=batch_size,
             )
             val_dataset = FyodorDataset(
                 books[int(len(books) * 0.8) :],
-                length=batch_size * 1,
+                length=batch_size * 10,
                 block_size=block_size,
                 batch_size=batch_size,
             )
@@ -107,7 +119,7 @@ if __name__ == "__main__":
             )
 
             trainer = pl.Trainer(
-                accelerator="gpu", devices=1, max_epochs=5, log_every_n_steps=1
+                accelerator="gpu", devices=1, max_epochs=25, log_every_n_steps=1
             )
             model = BigramLightning(
                 to_device=device,
