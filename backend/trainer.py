@@ -102,13 +102,13 @@ if __name__ == "__main__":
             books = "\n".join(books_string)
             train_dataset = FyodorDataset(
                 books[: int(len(books) * 0.8)],
-                length=batch_size * 5,
+                length=batch_size * 100,
                 block_size=block_size,
                 batch_size=batch_size,
             )
             val_dataset = FyodorDataset(
                 books[int(len(books) * 0.8) :],
-                length=batch_size * 1,
+                length=batch_size * 10,
                 block_size=block_size,
                 batch_size=batch_size,
             )
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             )
 
             trainer = pl.Trainer(
-                accelerator="gpu", devices=1, max_epochs=2, log_every_n_steps=1
+                accelerator="gpu", devices=1, max_epochs=25, log_every_n_steps=1
             )
             model = BigramLightning(
                 to_device=device,
