@@ -26,7 +26,7 @@ export default function Home() {
 
   useEffect(() => {
     // console.log(output)
-    setComplete(text + output.slice(1))
+    setComplete(output)
   }, [output])
 
   return (
