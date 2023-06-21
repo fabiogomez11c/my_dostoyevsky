@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://my-dostoyevsky.vercel.app/" ><img src="app.png" alt="FastAPI"></a>
+  <a href="https://my-dostoyevsky.vercel.app/" ><img src="app.png" alt="app"></a>
 </p>
 
 Send a message to an NLP agent trained with Dostoevsky work! See a demo [here](https://my-dostoyevsky.vercel.app/).
