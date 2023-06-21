@@ -1,5 +1,3 @@
-# NLP from Dostoyevsky books
-
 <p align="center">
   <a href="https://my-dostoyevsky.vercel.app/" ><img src="app.png" alt="FastAPI"></a>
 </p>
