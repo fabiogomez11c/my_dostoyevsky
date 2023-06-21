@@ -133,12 +133,12 @@ if __name__ == "__main__":
             )
 
             mlflow.pytorch.autolog()
-            mlflow.pytorch.log_state_dict(model.state_dict(), artifact_path)
             trainer.fit(
                 model,
                 train_dataloaders=train_dataloader,
                 val_dataloaders=val_dataloader,
             )
+            mlflow.pytorch.log_state_dict(model.state_dict(), artifact_path)
 
             # x = torch.zeros((1, 1), dtype=torch.long)
             # x[0, 0] = 1
