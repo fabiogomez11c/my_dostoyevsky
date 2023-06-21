@@ -4,21 +4,24 @@ from src.model import BigramLanguageModel
 from trainer import BigramLightning
 
 
-if __name__ == "__main__":
+def predictor(text) -> str:
     # load the model
-    uri = "mlartifacts/927816015437864496/fcaa846067ef4c65a4e1670d3d95e003/artifacts/model"
+    uri = "mlartifacts/927816015437864496/eea158f9f96c4164b0494e3c6ede2d80/artifacts/model"
     state_dict = mlflow.pytorch.load_state_dict(uri)
-    model = BigramLightning(
-        n_embd=192,
+    model = BigramLanguageModel(
+        n_embd=384,
         block_size=256,
-        n_head=8,
-        n_layer=6,
+        n_head=4,
+        n_layer=12,
         dropout=0.3,
         to_device="cpu",
     )
     model.load_state_dict(state_dict)
-
-    x = torch.zeros((1, 1), dtype=torch.long)
-    x[0, 0] = 1
+    decoded = torch.tensor([model.encode(text)], dtype=torch.long)
     model.eval()
-    print(model.decode(model.generate(idx=x, max_new_tokens=500)[0].tolist()))
+    return model.decode(model.generate(idx=decoded, max_new_tokens=500)[0].tolist())
+
+
+if __name__ == "__main__":
+    text = "It was a dark and stormy night"
+    print(predictor(text))
