@@ -139,10 +139,3 @@ if __name__ == "__main__":
                 val_dataloaders=val_dataloader,
             )
             mlflow.pytorch.log_state_dict(model.state_dict(), artifact_path)
-
-            # x = torch.zeros((1, 1), dtype=torch.long)
-            # x[0, 0] = 1
-            # x = x.to("cuda")
-            # model = model.to("cuda")
-            # model.eval()
-            # print(model.decode(model.generate(idx=x, max_new_tokens=500)[0].tolist()))
