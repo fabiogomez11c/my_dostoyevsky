@@ -48,6 +48,5 @@ npm run dev
 
 ## TODO
 - Loading state in the frontend
-- Better model with attention mechanism
 - Add description into frontend
 - Animation of the complete text
