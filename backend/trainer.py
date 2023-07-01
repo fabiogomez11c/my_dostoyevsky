@@ -54,12 +54,12 @@ if __name__ == "__main__":
     exp_id = mlflow.create_experiment(exp_name)
 
     # create grid of hyperparameters
-    space_block_size = [128, 256]
-    space_n_embd = [192, 384]
-    space_n_head = [2, 4, 6, 8]
-    space_n_layer = [6, 9, 12]
-    space_dropout = [0.3]
-    space_learning_rate = [1e-3]
+    space_block_size = [512]
+    space_n_embd = [768]
+    space_n_head = [4]
+    space_n_layer = [9]
+    space_dropout = [0.1]
+    space_learning_rate = [3e-4]
 
     # random grid
     params = list(
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         with mlflow.start_run(experiment_id=exp_id) as run:
             artifact_path = "model"
             device = "cuda" if torch.cuda.is_available() else "cpu"
-            batch_size = 256
+            batch_size = 64
             print("+++++++++++++++++++++++++++++++")
             print(
                 {
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             )
 
             trainer = pl.Trainer(
-                accelerator="gpu", devices=1, max_epochs=25, log_every_n_steps=1
+                accelerator="gpu", devices=1, max_epochs=200, log_every_n_steps=1
             )
             model = BigramLightning(
                 to_device=device,
