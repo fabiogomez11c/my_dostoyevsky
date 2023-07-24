@@ -27,25 +27,12 @@ class CustomFyodorDataset(FyodorDataset):
         return x, y
 
 
-class EncoderModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.embedding = nn.Embedding(len(VOCAB), 4)
-        self.head = Head()
-
-    def forward(self, x):
-        # attention
-        x = self.embedding(x)
-        out = self.head(x)
-        return out
-
-
 class Head(nn.Module):
-    def __init__(self):
+    def __init__(self, embed_dim: int = 4, head_size: int = 8):
         super().__init__()
-        self.query = nn.Linear(4, 8, bias=False)
-        self.key = nn.Linear(4, 8, bias=False)
-        self.value = nn.Linear(4, 8, bias=False)
+        self.query = nn.Linear(embed_dim, head_size, bias=False)
+        self.key = nn.Linear(embed_dim, head_size, bias=False)
+        self.value = nn.Linear(embed_dim, head_size, bias=False)
 
     def forward(self, hidden):
         q = self.query(hidden)
@@ -57,6 +44,34 @@ class Head(nn.Module):
         wei = F.softmax(wei, dim=-1)
 
         out = wei @ v
+        return out
+
+
+class MultiHead(nn.Module):
+    def __init__(self, num_heads: int = 8, embed_dim: int = 4):
+        super().__init__()
+        head_dim = embed_dim // num_heads
+        self.heads = nn.ModuleList(
+            [Head(embed_dim=embed_dim, head_size=head_dim) for _ in range(num_heads)]
+        )
+        self.output_linear = nn.Linear(embed_dim, embed_dim)
+
+    def forward(self, hidden):
+        out = torch.cat([h(hidden) for h in self.heads], dim=-1)
+        out = self.output_linear(out)
+        return out
+
+
+class EncoderModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.embedding = nn.Embedding(len(VOCAB), 4)
+        self.head = Head()
+
+    def forward(self, x):
+        # attention
+        x = self.embedding(x)
+        out = self.head(x)
         return out
 
 
