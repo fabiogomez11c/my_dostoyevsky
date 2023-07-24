@@ -31,16 +31,26 @@ class EncoderModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.embedding = nn.Embedding(len(VOCAB), 4)
-        self.query = nn.Linear(4, 8, bias=False)
-        self.key = nn.Linear(4, 8, bias=False)
-        self.value = nn.Linear(4, 8, bias=False)
+        self.head = Head()
 
     def forward(self, x):
         # attention
         x = self.embedding(x)
-        q = self.query(x)
-        k = self.key(x)
-        v = self.value(x)
+        out = self.head(x)
+        return out
+
+
+class Head(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.query = nn.Linear(4, 8, bias=False)
+        self.key = nn.Linear(4, 8, bias=False)
+        self.value = nn.Linear(4, 8, bias=False)
+
+    def forward(self, hidden):
+        q = self.query(hidden)
+        k = self.key(hidden)
+        v = self.value(hidden)
         kdim = k.shape[-1]
 
         wei = q @ k.transpose(-1, -2) / (kdim**0.5)
