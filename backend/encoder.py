@@ -63,15 +63,21 @@ class MultiHead(nn.Module):
 
 
 class EncoderModel(nn.Module):
-    def __init__(self):
+    def __init__(self, embed_dim: int = 32, num_heads: int = 8):
         super().__init__()
-        self.embedding = nn.Embedding(len(VOCAB), 4)
-        self.head = Head()
+        assert (
+            embed_dim % num_heads == 0
+        ), "Embedding dimension must be divisible by number of heads"
+        assert (
+            embed_dim > num_heads
+        ), "Embedding dimension must be greater than number of heads"
+        self.embedding = nn.Embedding(len(VOCAB), embed_dim)
+        self.multi_head = MultiHead(num_heads=num_heads, embed_dim=embed_dim)
 
     def forward(self, x):
         # attention
         x = self.embedding(x)
-        out = self.head(x)
+        out = self.multi_head(x)
         return out
 
 
@@ -81,6 +87,8 @@ if __name__ == "__main__":
     # Hyperparameters
     batch_size = 32
     block_size = 8
+    embed_dim = 128
+    num_heads = 8
 
     books = get_files_from_folder("books")
     books_string = [open_txt(f"books/{i}") for i in books]
@@ -94,7 +102,7 @@ if __name__ == "__main__":
 
     x, y = train_dataset[0]
 
-    model = EncoderModel()
+    model = EncoderModel(embed_dim=embed_dim, num_heads=num_heads)
     y_hat = model(x)
 
     print("Done")
