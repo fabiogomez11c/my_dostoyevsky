@@ -47,6 +47,22 @@ class Head(nn.Module):
         return out
 
 
+class FeedForward(nn.Module):
+    def __init__(self, embed_dim: int = 4, head_size: int = 8):
+        super().__init__()
+        self.linear1 = nn.Linear(embed_dim, head_size)
+        self.linear2 = nn.Linear(head_size, embed_dim)
+        self.gelu = nn.GELU()
+        self.dropout = nn.Dropout(0.1)
+
+    def forward(self, x):
+        x = self.linear1(x)
+        x = self.gelu(x)
+        x = self.dropout(x)
+        x = self.linear2(x)
+        return x
+
+
 class MultiHead(nn.Module):
     def __init__(self, num_heads: int = 8, embed_dim: int = 4):
         super().__init__()
@@ -73,11 +89,13 @@ class EncoderModel(nn.Module):
         ), "Embedding dimension must be greater than number of heads"
         self.embedding = nn.Embedding(len(VOCAB), embed_dim)
         self.multi_head = MultiHead(num_heads=num_heads, embed_dim=embed_dim)
+        self.feed_forward = FeedForward(embed_dim=embed_dim)
 
     def forward(self, x):
         # attention
         x = self.embedding(x)
         out = self.multi_head(x)
+        out = self.feed_forward(out)
         return out
 
 
