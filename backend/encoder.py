@@ -78,6 +78,27 @@ class MultiHead(nn.Module):
         return out
 
 
+class Embeddings(nn.Module):
+    def __init__(
+        self, vocab_size: int, embed_dim: int, max_len: int = 1000, dropout: float = 0.1
+    ):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.position_embeddings = nn.Embedding(max_len, embed_dim)
+        self.norm_1 = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        seq_len = x.shape[1]
+        pos = torch.arange(seq_len, device=x.device)  # .expand(x.shape).to(x.device)
+        token_embeddings = self.embedding(x)
+        pos_embeddings = self.position_embeddings(pos)
+        x = token_embeddings + pos_embeddings
+        x = self.norm_1(x)
+        x = self.dropout(x)
+        return x
+
+
 class EncoderModel(nn.Module):
     def __init__(self, embed_dim: int = 32, num_heads: int = 8):
         super().__init__()
@@ -87,14 +108,18 @@ class EncoderModel(nn.Module):
         assert (
             embed_dim > num_heads
         ), "Embedding dimension must be greater than number of heads"
-        self.embedding = nn.Embedding(len(VOCAB), embed_dim)
+        self.embedding = Embeddings(vocab_size=len(VOCAB), embed_dim=embed_dim)
         self.multi_head = MultiHead(num_heads=num_heads, embed_dim=embed_dim)
         self.feed_forward = FeedForward(embed_dim=embed_dim)
+
+        # layer pre normalization
+        self.norm_2 = nn.LayerNorm(embed_dim)
 
     def forward(self, x):
         # attention
         x = self.embedding(x)
         out = self.multi_head(x)
+        out = self.norm_2(out)
         out = self.feed_forward(out)
         return out
 
@@ -121,6 +146,6 @@ if __name__ == "__main__":
     x, y = train_dataset[0]
 
     model = EncoderModel(embed_dim=embed_dim, num_heads=num_heads)
-    y_hat = model(x)
+    y_hat = model(x.unsqueeze(0))
 
     print("Done")
